@@ -1,5 +1,5 @@
 # Optimized Checkout for Woocommerce
-This plugin improves your WooCommerce checkout page, making it simpler and similar to Shopify's checkout. It breaks down the checkout into easy steps for a better shopping experience. If someone has shopped with you before, they only need to do the payment step, making it even quicker.
+This code improves your WooCommerce checkout page, making it simpler and similar to Shopify's checkout. It breaks down the checkout into easy steps for a better shopping experience. If someone has shopped with you before, they only need to do the payment step, making it even quicker.
 
 Certainly! If you find the code I provided helpful and would like to support further development or show your appreciation, consider making a donation. Your contribution would be greatly appreciated and would help me continue to provide valuable assistance. Thank you for your support!
 
