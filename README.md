@@ -22,7 +22,7 @@ I'm Jimish Soni, a full-time freelancer with over 9 years of experience creating
    ```
 
 ## File Struture
-- Inside woocommerce folder, there is a folder with lable optimized-checkout whidh does most of the magic. It consist following files:
+- Inside woocommerce folder, there is a folder with lable optimized-checkout which does most of the magic. It consist following files:
   
 | File | Description |
 | --- | --- |
