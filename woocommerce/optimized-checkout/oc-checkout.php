@@ -43,6 +43,7 @@ class Owc_Public {
 	private $user_obj;
 	private $billing_data;
 	private $shipping_data;
+	private $virtual_product_checkout;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -53,10 +54,15 @@ class Owc_Public {
 	 */
 	public function __construct( $plugin_name, $version ) {
 
+		// do not run on admin side
+		if( is_admin() ){ return; }
+
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+		$this->virtual_product_checkout = true;
 
-		add_action( 'init', array( $this, 'owc_hooks_n_filters' ) );
+		add_action( 'init', array( $this, 'owc_virtual_product_checkout_product_in_cart' ) );
+		add_action( 'init', array( $this, 'owc_hooks_n_filters' ), 99 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
@@ -73,6 +79,12 @@ class Owc_Public {
 
 		}
 
+	}
+
+	function owc_virtual_product_checkout_product_in_cart(){
+	    foreach( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+	      if ( ! $cart_item['data']->is_virtual() ) $this->virtual_product_checkout = false;
+	   }
 	}
 
 	function owc_hooks_n_filters(){
@@ -99,7 +111,6 @@ class Owc_Public {
 			'owc_logged_in_user_screen', 
 			array( $this, 'owc_logged_in_user_checkout_step' ),
 		10, 1 );
-
 
 		add_filter( 
 			'woocommerce_cart_calculate_fees', 
@@ -208,7 +219,99 @@ class Owc_Public {
 			array( $this, 'owc_header_logo' )
 		);
 
+		/**
+ 		* 	Add prev/next button for step 1
+ 		*/
+		add_action( 'owc_step_one_bottom', 
+			array( $this, 'owc_step_one_bottom_navigation' )
+		);
 
+		/**
+ 		* 	Add prev/next button for step 2
+ 		*/
+		add_action( 'owc_step_two_bottom', 
+			array( $this, 'owc_step_two_bottom_navigation' )
+		);
+
+		/**
+ 		* 	Information reivew box for step 2
+ 		*/
+		add_action( 'owc_step_two_top', 
+			array( $this, 'owc_step_two_info_review_box' )
+		);
+
+		/**
+ 		* 	Information reivew box for step 3
+ 		*/
+		add_action( 'owc_step_three_top', 
+			array( $this, 'owc_step_three_info_review_box' )
+		);
+
+	}
+
+	function owc_step_two_info_review_box(){
+		if( $this->virtual_product_checkout ){ return; }
+		?>
+			<div class="information-review-box">
+				<table>
+					<tr class="contact">
+						<td>Contact</td>
+						<td width="100%" class="contact-email"></td>
+						<td><a class="owc-information" href="#owc-information">Change</a></td>
+					</tr>
+					<tr class="ship-to">
+						<td>Ship to</td>
+						<td class="ship-to-address"></td>
+						<td><a class="owc-information" href="#owc-information">Change</a></td>
+					</tr>
+				</table>
+			</div>
+		<?php
+	}
+
+	function owc_step_three_info_review_box(){
+		if( $this->virtual_product_checkout ){ return; }
+		?>
+			<div class="information-review-box">
+				<table>
+					<tr class="contact">
+						<td>Contact</td>
+						<td width="100%" class="contact-email"></td>
+						<td><a class="owc-information" href="#owc-information">Change</a></td>
+					</tr>
+					<tr class="ship-to">
+						<td>Ship to</td>
+						<td class="ship-to-address"></td>
+						<td><a class="owc-information" href="#owc-information">Change</a></td>
+					</tr>
+					<tr class="ship-method">
+						<td>Method</td>
+						<td class="shipping-method"></td>
+						<td><a class="owc-shipping" href="#owc-shipping">Change</a></td>
+					</tr>
+				</table>
+			</div>
+		<?php
+	}
+
+	function owc_step_one_bottom_navigation(){
+		if( $this->virtual_product_checkout ){ return; }
+		?>
+			<div class="bottom-navigation">
+				<a class="go-back-btn owc-back-to-shop" href="<?php echo wc_get_page_permalink( 'shop' ); ?>">< Return to shop</a>
+				<button class="owc-shipping" type="button">Continue to shipping</button>
+			</div>
+		<?php
+	}
+
+	function owc_step_two_bottom_navigation(){
+		if( $this->virtual_product_checkout ){ return; }
+		?>
+			<div class="bottom-navigation">
+				<a class="go-back-btn owc-information" href="#owc-information">< Return to information</a>
+				<button class="owc-payment">Continue to payment</button>
+			</div>
+		<?php
 	}
 
 	function woocommerce_login_popup_close_btn(){
@@ -220,6 +323,10 @@ class Owc_Public {
 
 		if( show_loggged_user_checkout_step() ){
 			$classes[] = 'show-step-0';
+		}
+
+		if( $this->virtual_product_checkout ){
+			$classes[] = 'owc-only-virtual-products-checkout';
 		}
 
 	    return $classes;
@@ -286,21 +393,7 @@ class Owc_Public {
 	 * @since    1.0.0
 	 */
 	public function enqueue_styles() {
-
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Owc_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Owc_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
 		wp_enqueue_style( $this->plugin_name, get_theme_file_uri( '/woocommerce/optimized-checkout/oc-style.css' ), array(), false, 'all' );
-
 	}
 
 	/**
@@ -309,21 +402,7 @@ class Owc_Public {
 	 * @since    1.0.0
 	 */
 	public function enqueue_scripts() {
-
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Owc_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Owc_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
 		wp_enqueue_script( $this->plugin_name, get_theme_file_uri( '/woocommerce/optimized-checkout/oc-jquery.js' ), array( 'jquery' ), false, true );
-
 	}
 
 	/**
@@ -345,7 +424,7 @@ class Owc_Public {
 	 */
 	function owc_header_logo(){
 		if ( function_exists( 'the_custom_logo' ) ) {
-			echo '<div class="logo">';
+			echo '<div class="oc-logo">';
 		 		the_custom_logo();
 		 	echo '</div>';
 		}	
@@ -360,7 +439,7 @@ class Owc_Public {
 
 		$cart_page_url = wc_get_cart_url();
 
-		if( show_loggged_user_checkout_step() ){
+		if( show_loggged_user_checkout_step() || $this->virtual_product_checkout ){
 
 			$steps = array(
 				'show-cart' => 'Cart',
@@ -430,9 +509,19 @@ class Owc_Public {
 		$fields['billing']['billing_phone']['placeholder'] = 'Phone';
 		$fields['billing']['billing_phone']['required'] = false;
 
-		//unset($fields['order']['order_comments']);
-
 		$fields['order']['order_comments']['placeholder'] = 'Any delivery notes about your order. e.g. Deliver to a neighbour if Im out';
+
+		if( $this->virtual_product_checkout ){
+			unset($fields['billing']['billing_company']);
+			unset($fields['billing']['billing_address_1']);
+			unset($fields['billing']['billing_address_2']);
+			unset($fields['billing']['billing_city']);
+			unset($fields['billing']['billing_postcode']);
+			unset($fields['billing']['billing_country']);
+			unset($fields['billing']['billing_state']);
+			unset($fields['billing']['billing_phone']);
+			add_filter( 'woocommerce_enable_order_notes_field', '__return_false' );
+		}
 
      	return $fields;
 
@@ -452,7 +541,15 @@ class Owc_Public {
 		?>
 			<div class="inofmation-box">
 				<div class="inofmation-box-header">
-					<h3>Information</h3>
+					<h3>
+						<?php
+							if( $this->virtual_product_checkout ){
+								echo 'Billing Information';
+							} else {
+								echo 'Information';
+							}
+						?>
+					</h3>
 					<?php if( !is_user_logged_in() ): ?>
 						<p class="login-msg">Already have an account? <a href="#show-account">Log in</a></p>
 					<?php endif; ?>
@@ -465,6 +562,9 @@ class Owc_Public {
 	}
 
 	function owc_shipping_method_box(){
+
+		if( $this->virtual_product_checkout ){ return; }
+
 		$count = 0;
 
 		if( isset( WC()->shipping->packages[0] ) ){
@@ -484,9 +584,13 @@ class Owc_Public {
 	}
 
 	function owc_billing_address_box($checkout){
-		?>
 
-		<?php do_action( 'woocommerce_before_checkout_billing_form', $checkout ); ?>
+		if( $this->virtual_product_checkout ){
+			$this->owc_virtual_checkout_billing_address_box($checkout);
+		} else {
+		
+			do_action( 'woocommerce_before_checkout_billing_form', $checkout ); 
+		?>
 
 			<div class="owc-billing-address-box">
 				<h3>Billing address</h3>
@@ -530,6 +634,31 @@ class Owc_Public {
 					</li>
 				</ul>
 
+			</div>
+
+		<?php 
+			do_action( 'woocommerce_after_checkout_billing_form', $checkout );
+		}
+	}
+
+	function owc_virtual_checkout_billing_address_box($checkout){
+		?>
+
+		<?php do_action( 'woocommerce_before_checkout_billing_form', $checkout ); ?>
+
+			<div class="owc-billing-address-box">
+				<div class="woocommerce-billing-fields__field-wrapper">
+					<?php
+					$fields = $checkout->get_checkout_fields( 'billing' );
+
+					foreach ( $fields as $key => $field ) {
+						if($key == 'billing_email'){
+							continue;
+						}
+						woocommerce_form_field( $key, $field, $checkout->get_value( $key ) );
+					}
+					?>
+				</div>	
 			</div>
 
 			<?php do_action( 'woocommerce_after_checkout_billing_form', $checkout ); ?>
@@ -587,6 +716,7 @@ class Owc_Public {
 
 	function owc_mobile_order_summary(){
 		?>
+			<a href="#" class="open-summary-box">Have coupon code or gift card?</a>
 			<div class="owc-mobile-order-summary">
 				<div class="summary-header">
 					<div>Show order summary</div>
@@ -736,8 +866,8 @@ function show_loggged_user_checkout_step(){
 	return false;
 }
 
-add_filter( 'template_include', 'portfolio_page_template', 99 );
-function portfolio_page_template( $template ) {
+add_filter( 'template_include', 'owc_checkout_page_template', 99 );
+function owc_checkout_page_template( $template ) {
     if ( is_checkout()  ) {
 
         $new_template = locate_template( array( '/woocommerce/optimized-checkout/checkout-template.php' ) );

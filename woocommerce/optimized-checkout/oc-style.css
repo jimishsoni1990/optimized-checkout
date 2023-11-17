@@ -73,6 +73,7 @@
 	--oc-info-summary-box-font-size:		14px;
 	--oc-change-text-color:					#2b2b2b;
 	--oc-change-text-hovercolor:			#000000;
+	--oc-have-coupon-text-color:			#2b2b2b;
 
 	/* radio and checkbox */
 	--oc-radio-checked-color:				#2b2b2b;
@@ -156,6 +157,7 @@ input {
 }
 .left-container{
 	padding-right: 6%;
+	padding-bottom: 6%;
 	-webkit-box-flex: 0;
 	-ms-flex: 0 0 58%;
 		flex: 0 0 58%;
@@ -187,6 +189,14 @@ input {
 .show-step-0 .step-2.step-content,
 .show-step-0 .step-3.step-content{
 	display: none;
+}
+.owc-only-virtual-products-checkout .step-1.step-content,
+.owc-only-virtual-products-checkout .step-2.step-content,
+.owc-only-virtual-products-checkout .step-3.step-content{
+	display: block;
+}
+.owc-only-virtual-products-checkout .step-1 .inofmation-box {
+  margin-bottom: 0;
 }
 .woocommerce-checkout form.woocommerce-form.woocommerce-form-login.login {
 	display: block !important;
@@ -262,7 +272,7 @@ body.woocommerce-order-received .woocommerce-order h3,
 .owc-box .order-info-value {
     margin-bottom: 22px;
 }
-.logo{
+.oc-logo{
 	text-align: left;
 	margin: 20px 0 10px;
 }
@@ -270,7 +280,7 @@ body.woocommerce-order-received .woocommerce-order h3,
     display: block;
     max-width: 150px;
 }
-.logo img{
+.oc-logo img{
 	max-height: 50px;
 	max-width: 150px !important;
 }
@@ -842,6 +852,11 @@ body .woocommerce .woocommerce-customer-details address {
             justify-content: space-between;
     padding: 10px 15px;
 }
+.open-summary-box{
+	color: var(--oc-have-coupon-text-color);
+	display: block;
+	margin-bottom: 1rem;
+}
 .owc-mobile-order-summary{
 	background-color: #f8f8f8;
 	border-radius: 6px;
@@ -909,7 +924,7 @@ body .woocommerce .woocommerce-customer-details address {
   gap: 5px;
 }
 @media only screen and (max-width: 767px){
-	.logo{
+	.oc-logo{
 		margin-bottom: 10px;
 	}
 	.left-container,
