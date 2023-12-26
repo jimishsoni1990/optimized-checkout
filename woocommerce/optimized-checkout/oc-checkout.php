@@ -61,7 +61,6 @@ class Owc_Public {
 		$this->version = $version;
 		$this->virtual_product_checkout = true;
 
-		add_action( 'init', array( $this, 'owc_virtual_product_checkout_product_in_cart' ) );
 		add_action( 'init', array( $this, 'owc_hooks_n_filters' ), 99 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
@@ -82,12 +81,31 @@ class Owc_Public {
 	}
 
 	function owc_virtual_product_checkout_product_in_cart(){
+		
+		// perform this check only on checkout page
+		if( !is_checkout() ){ return; }
+
+		// if cart object is not available, set to false for backup
+		if ( !isset(WC()->cart) ){ $this->virtual_product_checkout = false; }
+
 	    foreach( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 	      if ( ! $cart_item['data']->is_virtual() ) $this->virtual_product_checkout = false;
 	   }
+
 	}
 
+
 	function owc_hooks_n_filters(){
+
+		add_action( 'wp', function(){
+			if( is_checkout() ){
+				add_filter('woocommerce_enqueue_styles', '__return_empty_array' );
+			}
+		}, 10);
+
+		add_action(
+			'wp', 
+			array( $this, 'owc_virtual_product_checkout_product_in_cart' ), 10);
 
 		add_action( 
 			'woocommerce_login_form_start', 
@@ -394,6 +412,8 @@ class Owc_Public {
 	 */
 	public function enqueue_styles() {
 		wp_enqueue_style( $this->plugin_name, get_theme_file_uri( '/woocommerce/optimized-checkout/oc-style.css' ), array(), false, 'all' );
+
+		
 	}
 
 	/**
@@ -403,6 +423,7 @@ class Owc_Public {
 	 */
 	public function enqueue_scripts() {
 		wp_enqueue_script( $this->plugin_name, get_theme_file_uri( '/woocommerce/optimized-checkout/oc-jquery.js' ), array( 'jquery' ), false, true );
+
 	}
 
 	/**
@@ -868,7 +889,8 @@ function show_loggged_user_checkout_step(){
 
 add_filter( 'template_include', 'owc_checkout_page_template', 99 );
 function owc_checkout_page_template( $template ) {
-    if ( is_checkout()  ) {
+
+	if ( is_checkout()  ) {
 
         $new_template = locate_template( array( '/woocommerce/optimized-checkout/checkout-template.php' ) );
 
