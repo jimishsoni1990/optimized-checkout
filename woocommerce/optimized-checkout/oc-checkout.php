@@ -351,6 +351,9 @@ class Owc_Public {
 	}
 
 	function owc_add_coupon_box(){
+
+		if ( ! wc_coupons_enabled() ) { return; }
+		
 		$security_nonce = wp_create_nonce( "apply-coupon" );
 		?>
 			<p class="form-row form-row-wide" id="coupon_field">
