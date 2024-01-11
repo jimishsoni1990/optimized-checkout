@@ -574,7 +574,7 @@ class Owc_Public {
 							}
 						?>
 					</h3>
-					<?php if( !is_user_logged_in() ): ?>
+					<?php if( !is_user_logged_in() && get_option( 'woocommerce_enable_checkout_login_reminder' ) == 'yes' ): ?>
 						<p class="login-msg">Already have an account? <a href="#show-account">Log in</a></p>
 					<?php endif; ?>
 				</div>
